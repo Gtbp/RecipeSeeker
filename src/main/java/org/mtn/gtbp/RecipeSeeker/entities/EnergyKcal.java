@@ -14,20 +14,14 @@ import lombok.Setter;
 @DiscriminatorValue(value = "Energy_Kcal")
 public class EnergyKcal extends TotalNutrients {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idEnergyKcal;
 	
-	//CONSTRUCTOR
 	public EnergyKcal(String label, Double quantity, String unit, Recipe recipe) {
 		super(label, quantity, unit, recipe);//
 	}
 	
-	
-	//TO STRING
 	public String toString() {
 		return "EnergyKcal [" + super.toString() + "]";
 	}
-
 
 }

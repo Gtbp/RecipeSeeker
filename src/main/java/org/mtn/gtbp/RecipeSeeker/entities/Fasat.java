@@ -14,20 +14,14 @@ import lombok.Setter;
 @DiscriminatorValue(value = "Fasat")
 public class Fasat extends TotalNutrients {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idFasat;
 	
-	//CONSTRUCTOR
 	public Fasat(String label, Double quantity, String unit, Recipe recipe) {
 		super(label, quantity, unit, recipe);
 	}
 	
-	
-	//TO STRING
 	public String toString() {
 		return "Fasat [" + super.toString() + "]";
 	}
-
 
 }

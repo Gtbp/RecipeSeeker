@@ -32,7 +32,7 @@ public class ApiDataResponse {
 	private String q;
 	private Integer count;
 	
-	@OneToMany(fetch= FetchType.LAZY, mappedBy= "apiDataResponse", cascade = CascadeType.ALL) // One ApiDataResponse To Many Recipe
+	@OneToMany(fetch= FetchType.LAZY, mappedBy= "apidataresponse", cascade = CascadeType.ALL) // One ApiDataResponse To Many Recipe
 	@JsonIgnore
 	private List<Recipe> recipes;
 

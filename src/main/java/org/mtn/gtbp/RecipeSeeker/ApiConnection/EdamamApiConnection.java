@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+
 public class EdamamApiConnection {
 	
 //	Tester de sauver en base
@@ -67,7 +68,7 @@ public class EdamamApiConnection {
 		// Call to Api
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", apiKey);
-
+		
 		HttpEntity<String> entity = new HttpEntity<>(headers);
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class);

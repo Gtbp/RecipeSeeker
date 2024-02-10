@@ -5,6 +5,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -35,16 +38,35 @@ public class Recipe {
 	
 	private String uri;
 	private String label;
+	
+	@Column(columnDefinition = "TEXT")
 	private String image;
 	private String source;
 	private String url;
+	
+	@ElementCollection
+	@CollectionTable(name="recipe_healthLabels", joinColumns= @JoinColumn(name = "idRecipe"))
+	@Column(name = "healthLabels")
 	private List<String> healthLabels;
+	
+	@ElementCollection
+	@CollectionTable(name="recipe_cautions", joinColumns= @JoinColumn(name = "idRecipe"))
+	@Column(name = "caution")
 	private List<String> cautions;
+	
+	@ElementCollection
+	@CollectionTable(name="recipe_ingredientLines", joinColumns= @JoinColumn(name = "idRecipe"))
+	@Column(name = "ingredientLines")
 	private List<String> ingredientLines;
+	
 	private Double calories;
 	private Double totalWeight;
 	private Double totalTime;
 	private String cuisineType;
+	
+	@ElementCollection
+	@CollectionTable(name="recipe_mealType", joinColumns= @JoinColumn(name = "idRecipe"))
+	@Column(name = "mealType")
 	private List<String> mealType;
 	
 	@ManyToOne // Many Recipe To One ApiDataResponse
@@ -55,7 +77,8 @@ public class Recipe {
 	@JsonIgnore
 	private List<Ingredients> ingredients;
 	
-	@OneToOne(mappedBy = "recipe") // One Recipe To One TotalNutrients
+	@OneToOne // One Recipe To One TotalNutrients
+	@JoinColumn(name="idTotalNutrients")
 	private TotalNutrients totalNutrients;
 
 	
@@ -81,8 +104,6 @@ public class Recipe {
 		this.apidataresponse = apidataresponse;
 	}
 	
-	
-	
 	public Recipe(Long idRecipe, String uri, String label, String image, String source, String url) {
 		super();
 		this.idRecipe = idRecipe;
@@ -92,6 +113,27 @@ public class Recipe {
 		this.source = source;
 		this.url = url;
 	}
+	
+	public Recipe(Long idRecipe, String uri, String label, String source, String url, List<String> healthLabels,
+			List<String> cautions, List<String> ingredientLines, Double calories, Double totalWeight, Double totalTime,
+			String cuisineType, List<String> mealType, ApiDataResponse apidataresponse) {
+		super();
+		this.idRecipe = idRecipe;
+		this.uri = uri;
+		this.label = label;
+		this.source = source;
+		this.url = url;
+		this.healthLabels = healthLabels;
+		this.cautions = cautions;
+		this.ingredientLines = ingredientLines;
+		this.calories = calories;
+		this.totalWeight = totalWeight;
+		this.totalTime = totalTime;
+		this.cuisineType = cuisineType;
+		this.mealType = mealType;
+		this.apidataresponse = apidataresponse;
+	}
+	
 
 	//TO STRING
 	@Override
@@ -102,5 +144,6 @@ public class Recipe {
 				+ ", totalTime=" + totalTime + ", cuisineType=" + cuisineType + ", mealType=" + mealType
 				+ ", apidataresponse=" + apidataresponse + "]";
 	}
+
 
 }

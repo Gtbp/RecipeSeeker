@@ -1,8 +1,10 @@
 package org.mtn.gtbp.RecipeSeeker.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,12 +33,10 @@ public class TotalNutrients {
 	private Double quantity;
 	private String unit;
 	
-	@OneToOne(optional=false) // One TotalNutrients To One Recipe
-	@JoinColumn(name="idRecipe")
+	@OneToOne(fetch= FetchType.LAZY, mappedBy = "totalNutrients", cascade = CascadeType.ALL, optional = false) // One TotalNutrients To One Recipe
 	private Recipe recipe;
 
 	
-	//CONSTRUCTOR
 	public TotalNutrients(String label, Double quantity, String unit, Recipe recipe) {
 		super();
 		this.label = label;
@@ -52,7 +52,6 @@ public class TotalNutrients {
 	}
 
 
-	//TO STRING
 	@Override
 	public String toString() {
 		return "TotalNutrients [label=" + label + ", quantity=" + quantity + ", unit=" + unit + ", recipe=" + recipe

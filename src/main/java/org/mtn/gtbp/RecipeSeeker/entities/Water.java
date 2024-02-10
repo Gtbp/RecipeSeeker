@@ -14,17 +14,12 @@ import lombok.Setter;
 @DiscriminatorValue(value = "Water")
 public class Water extends TotalNutrients {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idWater;
 	
-	//CONSTRUCTOR
-		public Water(String label, Double quantity, String unit, Recipe recipe) {
-			super(label, quantity, unit, recipe);
-		}
-
+	public Water(String label, Double quantity, String unit, Recipe recipe) {
+		super(label, quantity, unit, recipe);
+	}
 		
-	//TO STRING
 	public String toString() {
 		return "Water [" + super.toString() + "]";
 	}

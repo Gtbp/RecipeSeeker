@@ -14,20 +14,14 @@ import lombok.Setter;
 @DiscriminatorValue(value = "Sugar")
 public class Sugar extends TotalNutrients {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idSugar;
 
-	//CONSTRUCTOR
 	public Sugar(String label, Double quantity, String unit, Recipe recipe) {
 		super(label, quantity, unit, recipe);
 	}
 
-	//TO STRING
 	public String toString() {
 		return "Sugar [" + super.toString() + "]";
 	}
-	
-	
 	
 }

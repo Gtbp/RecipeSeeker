@@ -14,17 +14,12 @@ import lombok.Setter;
 @DiscriminatorValue(value = "Cholesterol")
 public class Cholesterol extends TotalNutrients {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idCholesterol;
 	
-	//CONSTRUCTOR
 	public Cholesterol(String label, Double quantity, String unit, Recipe recipe) {
 		super(label, quantity, unit, recipe);
 	}
 	
-	
-	//TO STRING
 	public String toString() {
 		return "Cholesterol [" + super.toString() + "]";
 	}

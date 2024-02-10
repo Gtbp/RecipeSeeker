@@ -1,14 +1,10 @@
-package org.mtn.gtbp.RecipeSeeker.ApiConnection;
+package org.mtn.gtbp.RecipeSeeker.services;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
+import org.junit.jupiter.api.Test;
+import org.mtn.gtbp.RecipeSeeker.ApiConnection.EdamamApiConnection;
 import org.mtn.gtbp.RecipeSeeker.entities.ApiDataResponse;
 import org.mtn.gtbp.RecipeSeeker.entities.Cholesterol;
 import org.mtn.gtbp.RecipeSeeker.entities.EnergyKcal;
@@ -17,93 +13,66 @@ import org.mtn.gtbp.RecipeSeeker.entities.Ingredients;
 import org.mtn.gtbp.RecipeSeeker.entities.Recipe;
 import org.mtn.gtbp.RecipeSeeker.entities.Sugar;
 import org.mtn.gtbp.RecipeSeeker.entities.Water;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoApiDataResponse;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoCholesterol;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoEnergyKcal;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoFasat;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoIngredients;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoRecipe;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoSugar;
+import org.mtn.gtbp.RecipeSeeker.iDao.IDaoWater;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class TestEdamamApiConnection {
+@SpringBootTest
+public class ServiceApiDataResponseImplTests {
 
-	private static String apiKey;
-	private static String appId;
+	Logger logger = LoggerFactory.getLogger(ServiceApiDataResponseImplTests.class);
 
-	private final static String apiUrlTemplate = "https://api.edamam.com/search?q={query}&app_id={appId}&app_key={apiKey}";
-	private static ApiDataResponse apiDataResponse;
-	private static Recipe recipeEntity;
+	@Autowired
+	private IDaoApiDataResponse iDaoApiDataResponse;
+	@Autowired
+	private IDaoRecipe iDaoRecipe;
+	@Autowired
+	private IDaoIngredients iDaoIngredients;
+	@Autowired
+	private IDaoWater iDaoWater;
+	@Autowired
+	private IDaoCholesterol iDaoCholesterol;
+	@Autowired
+	private IDaoEnergyKcal iDaoEnergyKcal;
+	@Autowired
+	private IDaoFasat iDaoFasat;
+	@Autowired
+	private IDaoSugar iDaoSugar;
 
-	public static void main(String[] args) throws JsonMappingException, JsonProcessingException {
-		getDataConfigProperties();
-		fetchApiEdamam("chicken potatoes apple");
-		testSaveBDD("chicken potatoes apple");
-	}
-
-	public static Map<String, String> getDataConfigProperties() {
-		Properties properties = new Properties();
-		FileInputStream input;
-        Map<String, String> apiCredentials = new HashMap<>();
-
-		try {
-			input = new FileInputStream("src/main/resources/config.properties");
-			try {
-				properties.load(input);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			apiKey = properties.getProperty("api_key");
-			appId = properties.getProperty("app_id");
-			
-			System.out.println("api_key=" + apiKey);
-			System.out.println("app_id=" + appId);
-			
-			apiCredentials.put("apiKey", apiKey);
-			apiCredentials.put("appId", appId);
-			
-		} catch (FileNotFoundException e) {
-			System.out.println("Config.properties doesn't exist");
-			e.printStackTrace();
-		}
-		return apiCredentials; 
-	}
-
-	public static String fetchApiEdamam(String query) {
-        Map<String, String> credentials = getDataConfigProperties();
-        
-        apiKey = credentials.get("apiKey");
-        appId = credentials.get("appId");
-
-		// URL creation with dynamic parameter (query)
-		String apiUrl = apiUrlTemplate.replace("{query}", query)
-					.replace("{appId}", appId)
-					.replace("{apiKey}", apiKey);
-
-		// Call to Api
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", apiKey);
-
-		HttpEntity<String> entity = new HttpEntity<>(headers);
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class);
-
-		// Response Api treatment
-		String responseBody = response.getBody();
-		return responseBody;
-	}
-
-	public static void testSaveBDD(String query) throws JsonMappingException, JsonProcessingException {
+	@Test
+	public void testSaveApiDataResponse() throws JsonMappingException, JsonProcessingException {
+		
+		String query= "duck orange";
+		System.err.println(query);
+		
 		ObjectMapper objectMapper = new ObjectMapper();
-		JsonNode jsonNode = objectMapper.readTree(fetchApiEdamam(query));
+
+		EdamamApiConnection edamamApiConnection = new EdamamApiConnection();
+
+		JsonNode jsonNode = objectMapper.readTree(edamamApiConnection.fetchApiEdamam(query));
 
 		// Fill ApiDataResponse table
 		String q = jsonNode.path("q").asText();
 		Integer count = jsonNode.path("count").asInt();
-		ApiDataResponse apiDataResponse = new ApiDataResponse(null, q, count);
-		
+		ApiDataResponse apiDataResponseEntity = new ApiDataResponse(null, q, count);
+
+		// Save apiDataResponseEntity
+		iDaoApiDataResponse.save(apiDataResponseEntity);
+
 		// Fill Recipe table
 		for (JsonNode hit : jsonNode.path("hits")) {
 			JsonNode recipe = hit.path("recipe");
@@ -144,9 +113,11 @@ public class TestEdamamApiConnection {
 					ingredientLines.add(ingredientsLinesNode.asText());
 				}
 			}
-			
-			recipeEntity = new Recipe(null, uri, label, image, source, url, healthLabels, cautions, ingredientLines,
-					calories, totalWeight, totalTime, cuisineType, null, apiDataResponse);
+
+			Recipe recipeEntity = new Recipe(null, uri, label, source, url, healthLabels, cautions, ingredientLines,
+					calories, totalWeight, totalTime, cuisineType, null, apiDataResponseEntity);
+
+			iDaoRecipe.save(recipeEntity);
 
 			// Fill Ingredients
 			for (JsonNode ingredients : recipe.path("ingredients")) {
@@ -162,46 +133,59 @@ public class TestEdamamApiConnection {
 
 				Ingredients ingredientEntity = new Ingredients(null, text, quantity, measure, food, weight,
 						foodCategory, foodId, imageIng, recipeEntity);
+
+				iDaoIngredients.save(ingredientEntity);
 			}
 
 			JsonNode TotalNutrientsNode = recipe.path("totalNutrients");
 
-			// Energy_kcal
 			JsonNode energy_Kcal = TotalNutrientsNode.path("ENERC_KCAL");
 			String labelKcal = energy_Kcal.path("label").asText();
 			Double quantity = energy_Kcal.path("quantity").asDouble();
 			String unit = energy_Kcal.path("unit").asText();
 			EnergyKcal energyKcalEntity = new EnergyKcal(labelKcal, quantity, unit, recipeEntity);
-			System.out.println(energyKcalEntity);
 
-			// Cholesterol
+			iDaoEnergyKcal.save(energyKcalEntity);
+
 			JsonNode chole = TotalNutrientsNode.path("CHOLE");
 			String labelChol = chole.path("label").asText();
 			Double quantityChol = chole.path("quantity").asDouble();
 			String unitChol = chole.path("unit").asText();
 			Cholesterol cholesterolEntity = new Cholesterol(labelChol, quantityChol, unitChol, recipeEntity);
 
-			// Water
+			iDaoCholesterol.save(cholesterolEntity);
+
 			JsonNode water = TotalNutrientsNode.path("WATER");
 			String labelWat = water.path("label").asText();
 			Double quantityWat = water.path("quantity").asDouble();
 			String unitWat = water.path("unit").asText();
 			Water waterEntity = new Water(labelWat, quantityWat, unitWat, recipeEntity);
 
-			// Fasat
+			iDaoWater.save(waterEntity);
+
 			JsonNode fasat = TotalNutrientsNode.path("FASAT");
 			String labelFas = fasat.path("label").asText();
 			Double quantityFas = fasat.path("quantity").asDouble();
 			String unitFas = fasat.path("unit").asText();
 			Fasat fasatEntity = new Fasat(labelFas, quantityFas, unitFas, recipeEntity);
 
-			// Sugar
+			iDaoFasat.save(fasatEntity);
+
 			JsonNode sugar = TotalNutrientsNode.path("SUGAR");
 			String labelSug = sugar.path("label").asText();
 			Double quantitySug = sugar.path("quantity").asDouble();
 			String unitSug = sugar.path("unit").asText();
 			Sugar sugarEntity = new Sugar(labelSug, quantitySug, unitSug, recipeEntity);
 
+			iDaoSugar.save(sugarEntity);
+
 		}
 	}
+	
+//	@Test
+//	public void testSaveRecipeEntity() {
+//		Recipe recipeEntity = new Recipe(null, "martin", "th", "rr", "tr", "jh");
+//		iDaoRecipe.save(recipeEntity);
+//	}
+//	
 }
